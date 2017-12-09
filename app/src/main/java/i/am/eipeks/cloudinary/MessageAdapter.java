@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 
@@ -55,7 +57,10 @@ public class MessageAdapter extends BaseAdapter {
 
         if (message.getMessageType().equals(Constants.IMAGE)){
             imageSent.setVisibility(View.VISIBLE);
-            messageContent.setVisibility(View.GONE);
+            Picasso.with(context)
+                    .load(message.getImageUrl())
+                    .placeholder(R.mipmap.ic_launcher)
+                    .into(imageSent);
         } else {
             imageSent.setVisibility(View.GONE);
             messageContent.setVisibility(View.VISIBLE);

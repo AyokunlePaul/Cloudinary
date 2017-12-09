@@ -1,8 +1,13 @@
 package i.am.eipeks.cloudinary;
 
-import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +18,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.cloudinary.android.MediaManager;
 import com.google.gson.Gson;
@@ -26,11 +32,15 @@ import com.pusher.client.channel.SubscriptionEventListener;
 
 import org.json.JSONArray;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class Chat extends AppCompatActivity implements View.OnClickListener {
@@ -42,6 +52,10 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
     private EditText typedMessage;
     private ImageButton sendMessage, loadImage;
     private ListView messagesList;
+    private Upload upload;
+    private Message message;
+    private boolean hasUploadedPicture = false;
+    private String imagePath;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,11 +63,18 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.activity_chat);
 
         MediaManager.init(this);
+        upload = RetrofitUtils.getRetrofit().create(Upload.class);
 
         typedMessage = findViewById(R.id.typed_message);
         sendMessage = findViewById(R.id.send);
         loadImage = findViewById(R.id.load_image);
         messagesList = findViewById(R.id.messages);
+
+        if (TextUtils.isEmpty(typedMessage.getText())){
+            sendMessage.setEnabled(false);
+        } else {
+            sendMessage.setEnabled(true);
+        }
 
         final List<Message> messages = new ArrayList<>();
         messagesList.setAdapter(new MessageAdapter(this, messages));
@@ -90,9 +111,16 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
             @Override
             public void onEvent(String channelName, String eventName, final String data) {
                 Gson gson = new Gson();
-                Message message = gson.fromJson(data, Message.class);
+                final Message message = gson.fromJson(data, Message.class);
+                message.setMessageType(Constants.TEXT);
                 messages.add(message);
-                messagesList.setSelection(messagesList.getAdapter().getCount() - 1);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(Chat.this, message.getMessageContent(), Toast.LENGTH_SHORT).show();
+                        messagesList.setSelection(messagesList.getAdapter().getCount() - 1);
+                    }
+                });
             }
         });
         pusher.connect();
@@ -102,25 +130,59 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.send:
-                String message = typedMessage.getText().toString();
-                requestParams.put("message", message);
-                requestParams.put("user", "Eipeks");
+                if (hasUploadedPicture){
+                    upload.picture(typedMessage.getText().toString(), "Eipeks", imagePath)
+                            .enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                                    switch (response.code()){
+                                        case 200:
 
-                AsyncHttpClient client = new AsyncHttpClient();
-                client.post(Constants.MESSAGE_ENDPOINT, requestParams, new JsonHttpResponseHandler(){
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                                            break;
+                                    }
+                                }
 
-                    }
+                                @Override
+                                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
 
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        
-                    }
-                });
+                                }
+                            });
+                } else {
+                    upload.message(typedMessage.getText().toString(), "Eipeks").enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                            switch (response.code()){
+                                case 200:
+                                    typedMessage.setText("");
+                                    break;
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                            Toast.makeText(Chat.this, "Error uploading message", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
                 break;
             case R.id.load_image:
+                Intent  chooseImage = new Intent();
+                chooseImage.setType("image/*");
+                chooseImage.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(chooseImage, "Select Picture"), Constants.IMAGE_CHOOSER_INTENT);
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.IMAGE_CHOOSER_INTENT && resultCode == RESULT_OK){
+            if (data != null && data.getData() != null){
+                Uri uri = data.getData();
+                hasUploadedPicture = true;
+                imagePath = getRealPathFromURI(uri);
+            }
         }
     }
 
@@ -134,6 +196,21 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
 
             }
         });
+    }
+
+    public String getRealPathFromURI(Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = getContentResolver().query(contentUri,  proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
 }

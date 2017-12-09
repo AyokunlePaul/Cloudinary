@@ -8,14 +8,32 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content">
 
-        <TextView
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="8"
-            android:padding="10dp"
-            android:id="@+id/message_content"
-            android:maxLines="100"
-            android:textStyle="bold"/>
+            android:layout_weight="8">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:id="@+id/message_content"
+                android:maxLines="100"
+                android:textStyle="bold"
+                android:text="@string/app_name"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/image_sent"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:id="@+id/image_sent"
+                android:contentDescription="@string/app_name"
+                android:visibility="gone"
+                android:scaleType="centerCrop"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
 
         <TextView
             android:layout_width="0dp"
@@ -23,15 +41,8 @@
             android:layout_weight="2"
             android:padding="10dp"
             android:id="@+id/time_stamp"
-            android:textStyle="italic"/>
-
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:id="@+id/image_sent"
-            android:layout_weight="8"
-            android:contentDescription="@string/app_name"
-            android:visibility="gone"/>
+            android:textStyle="italic"
+            android:layout_gravity="bottom"/>
 
     </LinearLayout>
 

@@ -2,12 +2,13 @@ package i.am.eipeks.cloudinary;
 
 
 public class Message {
-    private String messageType, messageContent, messageTime, user;
+    private String messageType, messageContent, messageTime, user, imageUrl;
 
-    public Message(String messageType, String messageContent, String messageTime, String user) {
+    public Message(){}
+
+    public Message(String messageType, String messageContent, String user) {
         this.messageType = messageType;
         this.messageContent = messageContent;
-        this.messageTime = messageTime;
         this.user = user;
     }
 
@@ -41,5 +42,13 @@ public class Message {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
