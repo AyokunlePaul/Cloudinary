@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
         <meta-data android:name="CLOUDINARY_URL"
-            android:value="cloudinary://@eipeks"/>
+            android:value="cloudinary://352993148375184:LTMrV-pDFiL9oLLFRJ5aSXOfWp4@eipeks"/>
     </application>
 
 </manifest>

@@ -52,21 +52,24 @@ public class MessageAdapter extends BaseAdapter {
         TextView messageContent = convertView.findViewById(R.id.message_content);
         TextView timeStamp = convertView.findViewById(R.id.time_stamp);
         ImageView imageSent = convertView.findViewById(R.id.image_sent);
+        View layoutView = convertView.findViewById(R.id.view_layout);
 
         Message message = messages.get(position);
 
-        if (message.getMessageType().equals(Constants.IMAGE)){
+        if (message.messageType.equals(Constants.IMAGE)){
             imageSent.setVisibility(View.VISIBLE);
+            layoutView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+            timeStamp.setTextColor(context.getResources().getColor(android.R.color.black));
             Picasso.with(context)
-                    .load(message.getImageUrl())
+                    .load(message.image)
                     .placeholder(R.mipmap.ic_launcher)
                     .into(imageSent);
         } else {
             imageSent.setVisibility(View.GONE);
             messageContent.setVisibility(View.VISIBLE);
-            messageContent.setText(message.getMessageContent());
         }
-        timeStamp.setText(message.getMessageTime());
+        timeStamp.setText(message.user);
+        messageContent.setText(message.message);
         return convertView;
     }
 }

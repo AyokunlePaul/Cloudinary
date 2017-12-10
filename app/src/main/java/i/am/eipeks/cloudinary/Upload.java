@@ -13,7 +13,7 @@ public interface Upload {
     Call<Void> message(@Field("message") String message, @Field("user") String user);
 
     @FormUrlEncoded
-    @POST
+    @POST("messages")
     Call<Void> picture(@Field("message") String message, @Field("user") String user,
                        @Field("image") String imageLink);
 
