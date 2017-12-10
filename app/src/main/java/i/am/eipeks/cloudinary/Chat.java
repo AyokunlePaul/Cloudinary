@@ -130,7 +130,7 @@ public class Chat extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.send:
-                makeToast("Send clicked");
+//                makeToast("Send clicked");
                 if (hasUploadedPicture){
                     MediaManager.get()
                             .upload(uri)

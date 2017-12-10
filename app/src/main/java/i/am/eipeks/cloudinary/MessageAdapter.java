@@ -58,6 +58,7 @@ public class MessageAdapter extends BaseAdapter {
 
         if (message.messageType.equals(Constants.IMAGE)){
             imageSent.setVisibility(View.VISIBLE);
+            messageContent.setVisibility(View.GONE);
             layoutView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
             timeStamp.setTextColor(context.getResources().getColor(android.R.color.black));
             Picasso.with(context)
